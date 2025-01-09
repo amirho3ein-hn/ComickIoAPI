@@ -27,7 +27,11 @@ This is a PHP class for interacting with the **Comick.io** website's API. It pro
 To use this class, you need to include it in your PHP project. You can either download the `ComickIo.php` file or clone this repository into your project.
 
 ```bash
-git clone https://github.com/your-username/ComickIoAPI.git
+git clone https://github.com/amirho3ein-hn/ComickIoAPI.git
+```
+
+``` php
+composer require amirho3ein-hn/ComickIoAPI
 ```
 
 ## Requirements
