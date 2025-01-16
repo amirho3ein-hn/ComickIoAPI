@@ -9,7 +9,7 @@ header('Content-Type: application/json');
  * ComickIoAPI: A class to interact with Comick.io API.
  */
 class ComickIoAPI {
-
+     
     /**
      * @var string $base_url The base URL of the comic website. This is used as the root URL for making API requests.
      */
@@ -83,6 +83,9 @@ class ComickIoAPI {
             $json_data = json_decode($clean_data, true);
 
             if (json_last_error() === JSON_ERROR_NONE) {
+                if (isset($json_data['notFound']) && $json_data['notFound']) {
+                    return ['status' => false, 'message' => "notFound"];
+                }
                 return ['status' => true, 'data' => $json_data];
             } else {
                 throw new Exception("Invalid JSON format");
@@ -152,7 +155,8 @@ class ComickIoAPI {
             return ['status' => false, 'message' => "The link format is incorrect. For example: https://comick.io/comic/na-honjaman-level-up-ragnarok" ];
         }
 
-        $comic_name = strtolower($comic[4]);
+        // $comic_name = strtolower($comic[4]);
+        $comic_name = $comic[4];
 
         $response = $this->fetchApiContent($this->base_url . "/_next/data/$this->build_id/comic/$comic_name.json?slug=$comic_name");
 
@@ -221,7 +225,9 @@ class ComickIoAPI {
         }else{
             $comic_data = $this->getComicData($comicUrl);
         }
-
+        if ($comic_data['status'] === false) {
+            return ['status' => false, 'message' => $comic_data['message']];
+        }
         return ['status' => true, 'comicid' => $comic_data['data']['pageProps']['comic']['id']];
 
     }
@@ -252,7 +258,9 @@ class ComickIoAPI {
         }else{
             $comic_data = $this->getComicData($comicUrl);
         }
-
+        if ($comic_data['status'] === false) {
+            return ['status' => false, 'message' => $comic_data['message']];
+        }
         return ['status' => true, 'country' => $comic_data['data']['pageProps']['comic']['country']];
 
     }
@@ -283,7 +291,9 @@ class ComickIoAPI {
         }else{
             $comic_data = $this->getComicData($comicUrl);
         }
-
+        if ($comic_data['status'] === false) {
+            return ['status' => false, 'message' => $comic_data['message']];
+        }
         return ['status' => true, 'last_chapter' => intval($comic_data['data']['pageProps']['comic']['last_chapter'])];
 
     }
@@ -314,7 +324,9 @@ class ComickIoAPI {
         }else{
             $comic_data = $this->getComicData($comicUrl);
         }
-
+        if ($comic_data['status'] === false) {
+            return ['status' => false, 'message' => $comic_data['message']];
+        }
         return ['status' => true, 'cover' => $this->sub_pictures_url . "{$comic_data['data']['pageProps']['comic']['md_covers'][0]["b2key"]}"];
 
     }
@@ -344,7 +356,9 @@ class ComickIoAPI {
         }else{
             $comic_data = $this->getComicData($comicUrl);
         }
-
+        if ($comic_data['status'] === false) {
+            return ['status' => false, 'message' => $comic_data['message']];
+        }
         return ['status' => true, 'slug' => $comic_data['data']['pageProps']['comic']['slug']];
 
     }
@@ -375,7 +389,9 @@ class ComickIoAPI {
         }else{
             $comic_data = $this->getComicData($comicUrl);
         }
-
+        if ($comic_data['status'] === false) {
+            return ['status' => false, 'message' => $comic_data['message']];
+        }
         return ['status' => true, 'title' => $comic_data['data']['pageProps']['comic']['title']];
 
     }
@@ -397,7 +413,7 @@ class ComickIoAPI {
      * - 'message' (string): A message providing further information, especially if no chapters or specific chapters are available.
      * - 'chapters' (array): The list of chapters matching the criteria, if successfully retrieved.
      */
-    public function getComicChapters(string $comicUrl = null,string $lang = null,int $chapter = null) {
+    public function getComicChapters(string $comicUrl = null,string $lang = null,int $chapter = null,$type="chapter") {
 
         if ($comicUrl == null) {
             if ($this->comic_data == null) {
@@ -408,17 +424,20 @@ class ComickIoAPI {
         }else{
             $comic_data = $this->getComicData($comicUrl);
         }
-
+        if ($comic_data['status'] === false) {
+            return ['status' => false, 'message' => $comic_data['message']];
+        }
+        
         if ($lang == null) {
             $data_1 = [];
             foreach ($comic_data['data']['pageProps']['firstChapters'] as $firstChapters) {
                 $data_1[] = [
-                    'id' => $firstChapters['id'],
-                    'hid' => $firstChapters['hid'],
-                    'title' => $firstChapters['title'],
-                    'lang' => $firstChapters['lang'],
-                    'vol' => $firstChapters['vol'],
-                    'chap' => $firstChapters['chap'],
+                    'id' => isset($firstChapters['id']) ? $firstChapters['id'] : null,
+                    'hid' => isset($firstChapters['hid']) ? $firstChapters['hid'] : null,
+                    'title' => isset($firstChapters['title']) ? $firstChapters['title'] : null,
+                    'lang' => isset($firstChapters['lang']) ? $firstChapters['lang'] : null,
+                    'vol' => isset($firstChapters['vol']) ? $firstChapters['vol'] : null,
+                    'chap' => isset($firstChapters['chap']) ? $firstChapters['chap'] : 1,
                 ];
             }
         }else{
@@ -426,12 +445,12 @@ class ComickIoAPI {
             foreach ($comic_data['data']['pageProps']['firstChapters'] as $firstChapters) {
                 if ($firstChapters['lang'] == $lang) {
                     $arr[] = [
-                        'id' => $firstChapters['id'],
-                        'hid' => $firstChapters['hid'],
-                        'title' => $firstChapters['title'],
-                        'lang' => $firstChapters['lang'],
-                        'vol' => $firstChapters['vol'],
-                        'chap' => $firstChapters['chap'],
+                        'id' => isset($firstChapters['id']) ? $firstChapters['id'] : null,
+                        'hid' => isset($firstChapters['hid']) ? $firstChapters['hid'] : null,
+                        'title' => isset($firstChapters['title']) ? $firstChapters['title'] : null,
+                        'lang' => isset($firstChapters['lang']) ? $firstChapters['lang'] : null,
+                        'vol' => isset($firstChapters['vol']) ? $firstChapters['vol'] : null,
+                        'chap' => isset($firstChapters['chap']) ? $firstChapters['chap'] : 1,
                     ];
                 }
             }
@@ -440,7 +459,6 @@ class ComickIoAPI {
             }else{
                 return ['status' => false, 'message' => "We do not have Chapters in this language yet"];
             }
-            
         }
 
     
@@ -449,17 +467,20 @@ class ComickIoAPI {
         }else{
             $arr = [];
             foreach ($data_1 as $firstChapters) {
-                $response = $this->fetchApiContent($this->base_url . "/_next/data/$this->build_id/comic/{$this->getComicSlug()['slug']}/{$firstChapters['hid']}-chapter-{$firstChapters['chap']}-{$firstChapters['lang']}.json?slug={$this->getComicSlug()['slug']}&chapter={$firstChapters['hid']}-chapter-{$firstChapters['chap']}-{$firstChapters['lang']}");
-                
+                $response = $this->fetchApiContent($this->base_url . "/_next/data/$this->build_id/comic/{$this->getComicSlug()['slug']}/{$firstChapters['hid']}-$type-{$firstChapters['chap']}-{$firstChapters['lang']}.json?slug={$this->getComicSlug()['slug']}&chapter={$firstChapters['hid']}-$type-{$firstChapters['chap']}-{$firstChapters['lang']}");
+                if (isset($response['data']['pageProps']['__N_REDIRECT_STATUS']) && $response['data']['pageProps']['__N_REDIRECT_STATUS'] == 308) {
+                    return ['status' => false, 'message' => "type is volume"];
+                }
+
                 foreach ($response['data']['pageProps']['chapters'] as $res) {
                     if ($chapter == $res['chap']) {
                         $arr[] = [
-                            'id' => $res['id'],
-                            'hid' => $res['hid'],
-                            'title' => $res['title'],
-                            'lang' => $res['lang'],
-                            'vol' => $res['vol'],
-                            'chap' => $res['chap'],
+                            'id' => isset($res['id']) ? $res['id'] : null,
+                            'hid' => isset($res['hid']) ? $res['hid'] : null,
+                            'title' => isset($res['title']) ? $res['title'] : null,
+                            'lang' => isset($res['lang']) ? $res['lang'] : null,
+                            'vol' => isset($res['vol']) ? $res['vol'] : null,
+                            'chap' => isset($res['chap']) ? $res['chap'] : 1,
                         ];
                         break;
                     }
@@ -533,7 +554,7 @@ class ComickIoAPI {
     public function downloadComicChapter(string $comicUrl, string $hid, string $lang, int $chapter, string $outputDir = 'downloadChapter') {
 
         $chapterData = $this->getComicChapter($comicUrl, $hid, $lang, $chapter);
-    
+        
         if (!$chapterData['status']) {
             return ['status' => false, 'message' => "Error fetching chapter data: " . $chapterData['message']];
         }
