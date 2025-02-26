@@ -23,7 +23,7 @@ class ComickIoAPI {
     /**
      * @var string $build_id The build identifier used to specify a version of the website for API requests. It is appended to the URL to form the complete endpoint.
      */
-    private $build_id = '.b363e10d94e9f3a02b28050f4be6d00894946df3';
+    private $build_id = '.5e0373503a1a8a82c913dba8a0de490f2157dd0d';
 
     /**
      * @var array|null $comic_data Stores the comic data fetched from the API. Initially set to null, it is populated with data when fetched.
